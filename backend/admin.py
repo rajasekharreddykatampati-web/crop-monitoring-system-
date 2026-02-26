@@ -19,6 +19,7 @@ async def get_farmers(db: Session = Depends(get_db), admin: User = Depends(get_a
         "name": f.name,
         "email_phone": f.email_phone,
         "address": f.address,
+        "age": f.age,
         "is_active": f.is_active,
         "created_at": f.created_at
     } for f in farmers]
