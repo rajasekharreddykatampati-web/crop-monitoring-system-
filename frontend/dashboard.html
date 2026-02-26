@@ -7,7 +7,7 @@
     <meta name="description" content="CropDoctor Dashboard - Monitor crops, detect diseases, predict yields">
     <title>CropDoctor - Dashboard</title>
     <!-- Preconnect and prefetch for speed -->
-    <link rel="dns-prefetch" href="http://localhost:8000">
+    <link rel="dns-prefetch" href="https://crop-monitoring-system-3.onrender.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="style.css" as="style">
@@ -35,30 +35,31 @@
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-section-title">Main Menu</div>
-                <button class="nav-item active" data-page="crop-disease" onclick="switchPage('crop-disease')">
+                <div class="nav-section-title farmer-only">Main Menu</div>
+                <button class="nav-item active farmer-only" data-page="crop-disease"
+                    onclick="switchPage('crop-disease')">
                     <span class="nav-icon">🔬</span>
                     Crop Disease Detection
                 </button>
-                <button class="nav-item" data-page="yield" onclick="switchPage('yield')">
+                <button class="nav-item farmer-only" data-page="yield" onclick="switchPage('yield')">
                     <span class="nav-icon">📈</span>
                     Yield Prediction
                 </button>
-                <button class="nav-item" data-page="irrigation" onclick="switchPage('irrigation')">
+                <button class="nav-item farmer-only" data-page="irrigation" onclick="switchPage('irrigation')">
                     <span class="nav-icon">💧</span>
                     Irrigation
                 </button>
-                <button class="nav-item" data-page="fertilizer" onclick="switchPage('fertilizer')">
+                <button class="nav-item farmer-only" data-page="fertilizer" onclick="switchPage('fertilizer')">
                     <span class="nav-icon">🧪</span>
                     Fertilizer
                 </button>
-                <button class="nav-item" data-page="weather" onclick="switchPage('weather')">
+                <button class="nav-item farmer-only" data-page="weather" onclick="switchPage('weather')">
                     <span class="nav-icon">🌤️</span>
                     Weather
                 </button>
 
-                <div class="nav-section-title">Analytics</div>
-                <button class="nav-item" data-page="reports" onclick="switchPage('reports')">
+                <div class="nav-section-title farmer-only">Analytics</div>
+                <button class="nav-item farmer-only" data-page="reports" onclick="switchPage('reports')">
                     <span class="nav-icon">📋</span>
                     Reports
                 </button>

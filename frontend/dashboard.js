@@ -1,7 +1,8 @@
 // ===== CropDoctor Dashboard Module =====
-// Optimized for speed: API caching, debounced inputs, lazy loading
 
-// ===== API Response Cache (speed optimization) =====
+const API_BASE = 'https://crop-monitoring-system-3.onrender.com';
+
+// ===== API Response Cache =====
 const API_CACHE = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -41,53 +42,51 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDragDrop();
 });
 
-// Load user info from localStorage (cache)
+// Load user info and apply role-based navigation
 function loadUserInfo() {
     const raw = localStorage.getItem('cropdoctor_user');
-
-    if (!raw) {
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!raw) { window.location.href = 'login.html'; return; }
 
     let userData;
-    try {
-        userData = JSON.parse(raw);
-    } catch (e) {
+    try { userData = JSON.parse(raw); } catch (e) {
         localStorage.removeItem('cropdoctor_user');
-        window.location.href = 'login.html';
-        return;
+        window.location.href = 'login.html'; return;
     }
-
     if (!userData || !userData.name) {
         localStorage.removeItem('cropdoctor_user');
-        window.location.href = 'login.html';
-        return;
+        window.location.href = 'login.html'; return;
     }
 
-    // Display initials and name from cache
+    // Avatar
     const avatarEl = document.getElementById('user-avatar');
     const initials = userData.initials || getInitials(userData.name);
-
     if (userData.photo) {
-        avatarEl.innerHTML = `<img src="${userData.photo}" alt="${userData.name}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        avatarEl.innerHTML = `<img src="${userData.photo}" alt="${userData.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
     } else {
         avatarEl.textContent = initials;
     }
-
     document.getElementById('user-display-name').textContent = userData.name;
 
-    // Update role display
     const roleEl = document.querySelector('.user-info span');
     if (roleEl && userData.role) {
         roleEl.textContent = userData.role.charAt(0).toUpperCase() + userData.role.slice(1) + ' Account';
     }
 
-    if (userData.role === 'admin') {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-    }
-
     window.currentUser = userData;
+
+    if (userData.role === 'admin') {
+        // Admin: hide all farmer nav, show only Admin Panel
+        document.querySelectorAll('.farmer-only').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        document.getElementById('stats-row').style.display = 'none';
+        switchPage('admin');
+        loadAdminData();
+    } else {
+        // Farmer: show farmer nav, hide admin
+        document.querySelectorAll('.farmer-only').forEach(el => el.style.display = 'block');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        switchPage('crop-disease');
+    }
 }
 
 function getInitials(name) {
