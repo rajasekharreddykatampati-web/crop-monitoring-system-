@@ -6,10 +6,10 @@ FastAPI Backend Main Application
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routes.auth import router as auth_router
-from routes.crop import router as crop_router
-from routes.weather import router as weather_router
-from routes.admin import router as admin_router
+from auth import router as auth_router
+from crop import router as crop_router
+from weather import router as weather_router
+from admin import router as admin_router
 
 app = FastAPI(
     title="CropDoctor API",
