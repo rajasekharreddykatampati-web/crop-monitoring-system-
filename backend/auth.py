@@ -58,6 +58,10 @@ class AdminLogin(BaseModel):
     email: str
     password: str
 
+class GoogleLogin(BaseModel):
+    email: str
+    name: str
+
 class FarmerLogin(BaseModel):
     email_phone: str
     password: str
@@ -129,6 +133,47 @@ async def admin_login(data: AdminLogin, db: Session = Depends(get_db)):
     
     if not pwd_context.verify(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials. Wrong password.")
+
+    token = create_token({
+        "sub": str(user.id),
+        "name": user.name,
+        "role": user.role,
+        "email_phone": user.email_phone
+    })
+    
+    return {
+        "token": token,
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "initials": user.initials,
+            "email_phone": user.email_phone,
+            "role": user.role
+        }
+    }
+
+@router.post("/admin/google")
+async def admin_google_login(data: GoogleLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email_phone == data.email).first()
+    
+    if not user:
+        # Create an admin user for the Google login
+        user = User(
+            name=data.name,
+            address="Google Auth",
+            age=30,  # Default
+            email_phone=data.email,
+            password_hash=pwd_context.hash("google_oauth"),
+            initials=get_initials(data.name),
+            role="admin",
+            is_active=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    elif user.role != "admin":
+        user.role = "admin"
+        db.commit()
 
     token = create_token({
         "sub": str(user.id),

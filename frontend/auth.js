@@ -152,20 +152,33 @@ async function handleGoogleLogin() {
         const result = await firebase.auth().signInWithPopup(provider);
         const fbUser = result.user;
 
-        const user = {
-            name: fbUser.displayName,
-            email_phone: fbUser.email,
-            photo: fbUser.photoURL,
-            initials: getInitials(fbUser.displayName),
-            role: 'admin',
-            loggedInAt: new Date().toISOString()
-        };
+        // Exchange for backend token
+        const res = await fetch(`${API_BASE}/api/auth/admin/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: fbUser.email, name: fbUser.displayName || 'Admin' })
+        });
+        const data = await res.json();
 
-        localStorage.setItem('cropdoctor_user', JSON.stringify(user));
-        localStorage.setItem('cropdoctor_token', fbUser.uid);
+        if (res.ok) {
+            const user = {
+                name: data.user.name,
+                email_phone: data.user.email_phone,
+                photo: fbUser.photoURL,
+                initials: data.user.initials || getInitials(data.user.name),
+                role: 'admin',
+                loggedInAt: new Date().toISOString()
+            };
 
-        showMsg(msgEl, `✅ Welcome ${fbUser.displayName}! Redirecting...`, 'success');
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+            localStorage.setItem('cropdoctor_user', JSON.stringify(user));
+            localStorage.setItem('cropdoctor_token', data.token);
+
+            showMsg(msgEl, `✅ Welcome ${user.name}! Redirecting...`, 'success');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+        } else {
+            showMsg(msgEl, data.detail || 'Google Login rejected by server.', 'error');
+            firebase.auth().signOut();
+        }
 
     } catch (error) {
         showMsg(msgEl, 'Google Sign-In failed: ' + error.message, 'error');
