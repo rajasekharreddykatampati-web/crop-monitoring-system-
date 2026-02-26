@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Test Farmer",
+    "address": "123 Farm Road",
+    "age": 35,
+    "email_phone": "farmer@example.com",
+    "password_hash": "$5$rounds=535000$zaUKi9ejEvQsqTwG$4DxOMk6Cp6eYrm37HGjjHRMpf7BRaEt8xTAdxcRLoA.",
+    "initials": "TF",
+    "role": "farmer",
+    "created_at": "2026-02-25T02:54:33.345110"
+  },
+  {
+    "name": "RAJASEKHAR",
+    "address": "sivakasi",
+    "age": 20,
+    "email_phone": "raja@gmail.com",
+    "password_hash": "$5$rounds=535000$BJk./2e1ImGl2.aJ$Tn0PxGRE3K/woe8d68C9Naq565fnL.Y1f1ra6vvGYj0",
+    "initials": "RA",
+    "role": "farmer",
+    "created_at": "2026-02-25T02:59:10.488842"
+  }
+]

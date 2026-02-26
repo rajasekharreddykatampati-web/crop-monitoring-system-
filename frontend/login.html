@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login or Sign up to CropDoctor - AI-Based Crop Monitoring System">
+    <title>CropDoctor - Login / Sign Up</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+
+<body>
+    <div class="auth-container">
+        <!-- Left Branding Panel -->
+        <div class="auth-left">
+            <div class="auth-branding">
+                <div class="logo-large">🌱</div>
+                <h2>CropDoctor</h2>
+                <p>AI-Based Crop Monitoring and Decision Support System using DSSAT</p>
+                <div class="auth-features">
+                    <div class="auth-feature-item">
+                        <div class="check-icon">✓</div>
+                        <span>AI-Powered Disease Detection</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="check-icon">✓</div>
+                        <span>Accurate Yield Predictions</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="check-icon">✓</div>
+                        <span>Smart Irrigation & Fertilizer</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="check-icon">✓</div>
+                        <span>Real-time Weather Insights</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="auth-right">
+            <div class="auth-form-container">
+                <!-- Tab Toggle -->
+                <div class="auth-tab-toggle">
+                    <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+                    <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <div id="login-form-section">
+                    <div class="auth-form-header">
+                        <h2>Welcome Back 👋</h2>
+                        <p>Login to your CropDoctor account</p>
+                    </div>
+
+                    <!-- Role Toggle -->
+                    <div class="auth-tab-toggle" style="margin-bottom: 20px;">
+                        <button class="auth-tab active" id="tab-farmer-login"
+                            onclick="switchLoginRole('farmer')">Farmer</button>
+                        <button class="auth-tab" id="tab-admin-login" onclick="switchLoginRole('admin')">Admin</button>
+                    </div>
+
+                    <!-- Farmer Login -->
+                    <form id="farmer-login-form" onsubmit="handleFarmerLogin(event)">
+                        <div id="login-message" class="form-message"></div>
+
+                        <div class="form-group">
+                            <label for="login-email">Email / Phone <span>*</span></label>
+                            <input type="text" id="login-email" class="form-input"
+                                placeholder="Enter your email or phone" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Password <span>*</span></label>
+                            <input type="password" id="login-password" class="form-input"
+                                placeholder="Enter your password" required>
+                        </div>
+
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="remember-me">
+                            <label for="remember-me">Remember me</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary form-submit btn-lg" id="login-btn">
+                            Login as Farmer
+                        </button>
+                    </form>
+
+                    <!-- Admin Login -->
+                    <div id="admin-login-form" style="display: none;">
+                        <div style="text-align: center; padding: 20px 0;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">🔐</div>
+                            <h3 style="margin-bottom: 8px;">Admin Access</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.9rem;">
+                                Sign in with your Google account to access the admin dashboard.
+                            </p>
+                            <button type="button" class="btn btn-google btn-lg" style="width:100%;"
+                                onclick="handleGoogleLogin()">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path fill="#4285F4"
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                                    <path fill="#34A853"
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                    <path fill="#FBBC05"
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                    <path fill="#EA4335"
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                                </svg>
+                                Sign in with Google
+                            </button>
+                            <p style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
+                                Google Sign-In will be configured by the administrator.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-footer" id="login-footer">
+                        Don't have an account? <a href="#" onclick="switchTab('signup')">Sign Up</a>
+                    </div>
+                </div>
+
+                <!-- SIGNUP FORM -->
+                <div id="signup-form-section" style="display: none;">
+                    <div class="auth-form-header">
+                        <h2>Create Account 🌾</h2>
+                        <p>Sign up as a farmer to get started</p>
+                    </div>
+
+                    <form id="signup-form" onsubmit="handleSignup(event)">
+                        <div id="signup-message" class="form-message"></div>
+
+                        <div class="form-group">
+                            <label for="farmer-name">Name of Farmer <span>*</span></label>
+                            <input type="text" id="farmer-name" class="form-input" placeholder="Enter your full name"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="farmer-address">Address <span>*</span></label>
+                            <input type="text" id="farmer-address" class="form-input" placeholder="Enter your address"
+                                required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="farmer-age">Age <span>*</span></label>
+                                <input type="number" id="farmer-age" class="form-input" placeholder="Your age" min="18"
+                                    max="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="farmer-contact">Email / Phone <span>*</span></label>
+                                <input type="text" id="farmer-contact" class="form-input" placeholder="Email or Phone"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="farmer-password">Password <span>*</span></label>
+                            <input type="password" id="farmer-password" class="form-input"
+                                placeholder="Create a password" required minlength="6">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="farmer-confirm-password">Confirm Password <span>*</span></label>
+                            <input type="password" id="farmer-confirm-password" class="form-input"
+                                placeholder="Confirm your password" required>
+                        </div>
+
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="agree-terms" required>
+                            <label for="agree-terms">I agree to the <a href="#">Terms of Service</a> and <a
+                                    href="#">Privacy Policy</a></label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary form-submit btn-lg" id="signup-btn">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <div class="form-footer">
+                        Already have an account? <a href="#" onclick="switchTab('login')">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <script src="js/auth.js"></script>
+</body>
+
+</html>
