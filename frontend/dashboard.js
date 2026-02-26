@@ -651,70 +651,175 @@ function generateReport() {
 // =====================================================================
 async function loadAdminData() {
     if (window.currentUser?.role !== 'admin') return;
-    showLoading('Loading farmers...');
+    const listEl = document.getElementById('admin-farmers-list');
+    listEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">⏳ Loading farmers...</p>';
+
     try {
-        const farmers = await apiFetch('https://crop-monitoring-system-3.onrender.com/api/admin/farmers');
-        const listEl = document.getElementById('admin-farmers-list');
+        const farmers = await apiFetch(`${API_BASE}/api/admin/farmers`);
         listEl.innerHTML = '';
-        if (farmers.length === 0) {
-            listEl.innerHTML = '<p>No farmers registered yet.</p>';
-        } else {
-            farmers.forEach(f => {
-                const item = document.createElement('div');
-                item.style.border = '1px solid var(--border)';
-                item.style.padding = '16px';
-                item.style.borderRadius = '8px';
-                item.style.display = 'flex';
-                item.style.justifyContent = 'space-between';
-                item.style.alignItems = 'center';
-                item.innerHTML = `
-                    <div>
-                        <h4 style="margin:0;">${f.name} <span style="font-size:0.8rem; font-weight:normal; color: ${f.is_active ? 'green' : 'red'};">(${f.is_active ? 'Active' : 'Revoked'})</span></h4>
-                        <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
-                            ${f.email_phone} | ${f.address}
+
+        if (!farmers || farmers.length === 0) {
+            listEl.innerHTML = `
+                <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:3rem;margin-bottom:12px;">👨‍🌾</div>
+                    <h4 style="margin-bottom:8px;">No Farmers Registered Yet</h4>
+                    <p style="font-size:0.9rem;">Once farmers sign up, their details will appear here.</p>
+                </div>`;
+            return;
+        }
+
+        // Fetch analysis counts for all farmers in parallel
+        const analysisCounts = await Promise.all(
+            farmers.map(f =>
+                apiFetch(`${API_BASE}/api/admin/farmers/${f.id}/analysis`)
+                    .then(a => ({ id: f.id, count: a.length, latest: a[0] || null }))
+                    .catch(() => ({ id: f.id, count: 0, latest: null }))
+            )
+        );
+        const countMap = {};
+        analysisCounts.forEach(a => { countMap[a.id] = a; });
+
+        farmers.forEach(f => {
+            const info = countMap[f.id] || { count: 0, latest: null };
+            const joined = f.created_at ? new Date(f.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+            const latestActivity = info.latest
+                ? `Last activity: <strong>${info.latest.crop_type?.toUpperCase() || '—'}</strong> — ${info.latest.disease_prediction || '—'} (${new Date(info.latest.created_at).toLocaleDateString('en-IN')})`
+                : 'No analysis activity yet';
+
+            const card = document.createElement('div');
+            card.style.cssText = `
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 20px;
+                transition: box-shadow 0.2s;
+            `;
+            card.onmouseenter = () => card.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
+            card.onmouseleave = () => card.style.boxShadow = 'none';
+
+            card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+                    <!-- Left: Farmer info -->
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        <div style="
+                            width:52px;height:52px;border-radius:50%;
+                            background:linear-gradient(135deg,#1a7c3e,#2d9e57);
+                            display:flex;align-items:center;justify-content:center;
+                            color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">
+                            ${getInitials(f.name)}
+                        </div>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <h4 style="margin:0;font-size:1rem;">${f.name}</h4>
+                                <span style="
+                                    padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;
+                                    background:${f.is_active ? '#f0fdf4' : '#fef2f2'};
+                                    color:${f.is_active ? '#16a34a' : '#dc2626'};
+                                    border:1px solid ${f.is_active ? '#bbf7d0' : '#fecaca'};">
+                                    ${f.is_active ? '✅ Active' : '🚫 Revoked'}
+                                </span>
+                            </div>
+                            <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;display:flex;flex-wrap:wrap;gap:10px;">
+                                <span>📧 ${f.email_phone}</span>
+                                ${f.address ? `<span>📍 ${f.address}</span>` : ''}
+                                ${f.age ? `<span>🎂 Age: ${f.age}</span>` : ''}
+                            </div>
+                            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;">
+                                <span>📅 Joined: ${joined}</span>
+                                <span>🔬 ${info.count} analysis run${info.count !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;">${latestActivity}</div>
                         </div>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn btn-secondary btn-sm" onclick="viewFarmerAnalysis(${f.id})">View Analysis</button>
-                        <button class="btn btn-primary btn-sm" style="background:${f.is_active ? '#EF5350' : '#4CAF50'}; border-color:${f.is_active ? '#EF5350' : '#4CAF50'};" onclick="toggleFarmerAccess(${f.id})">
-                            ${f.is_active ? 'Revoke Access' : 'Restore Access'}
+
+                    <!-- Right: Actions -->
+                    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+                        <button class="btn btn-secondary btn-sm"
+                            onclick="viewFarmerAnalysis(${f.id}, '${f.name}')">
+                            📋 View Activity
+                        </button>
+                        <button class="btn btn-sm"
+                            style="background:${f.is_active ? '#fef2f2' : '#f0fdf4'};color:${f.is_active ? '#dc2626' : '#16a34a'};border:1px solid ${f.is_active ? '#fecaca' : '#bbf7d0'};font-weight:600;"
+                            onclick="toggleFarmerAccess(${f.id})">
+                            ${f.is_active ? '🚫 Revoke' : '✅ Restore'}
                         </button>
                     </div>
-                `;
-                listEl.appendChild(item);
-            });
-        }
+                </div>
+            `;
+            listEl.appendChild(card);
+        });
+
     } catch (err) {
         console.error('Failed to load admin data:', err);
-        alert('Could not load farmers list. Make sure backend is running.');
+        listEl.innerHTML = `
+            <div style="text-align:center;padding:40px;color:#dc2626;">
+                <div style="font-size:2rem;margin-bottom:12px;">⚠️</div>
+                <p>Could not load farmers. The backend may be waking up (Render free tier). Please wait 30 seconds and try again.</p>
+                <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="loadAdminData()">🔄 Retry</button>
+            </div>`;
     }
-    hideLoading();
 }
 
-async function viewFarmerAnalysis(farmerId) {
-    showLoading('Loading analysis...');
+function getInitials(name) {
+    if (!name) return 'CD';
+    const parts = name.trim().split(' ').filter(p => p.length > 0);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+}
+
+async function viewFarmerAnalysis(farmerId, farmerName) {
+    showLoading('Loading activity...');
     try {
-        const analyses = await apiFetch(`https://crop-monitoring-system-3.onrender.com/api/admin/farmers/${farmerId}/analysis`);
+        const analyses = await apiFetch(`${API_BASE}/api/admin/farmers/${farmerId}/analysis`);
         const modal = document.getElementById('admin-analysis-modal');
         const content = document.getElementById('admin-analysis-content');
+
+        // Update modal title with farmer name
+        const titleEl = modal.querySelector('h4');
+        if (titleEl) titleEl.textContent = `📋 Activity — ${farmerName || 'Farmer'}`;
+
         content.innerHTML = '';
 
-        if (analyses.length === 0) {
-            content.innerHTML = '<p>No analysis history for this farmer.</p>';
+        if (!analyses || analyses.length === 0) {
+            content.innerHTML = `
+                <div style="text-align:center;padding:40px;color:var(--text-muted);">
+                    <div style="font-size:2.5rem;margin-bottom:12px;">🔬</div>
+                    <p>This farmer has not run any analysis yet.</p>
+                </div>`;
         } else {
-            analyses.forEach(a => {
-                const el = document.createElement('div');
-                el.style.borderLeft = '4px solid var(--primary)';
-                el.style.background = 'var(--bg)';
-                el.style.padding = '12px';
-                el.style.borderRadius = '4px';
+            analyses.forEach((a, idx) => {
+                const date = new Date(a.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+                const healthy = a.is_healthy;
+                const isYield = a.disease_prediction === 'Yield Prediction';
 
-                const date = new Date(a.created_at).toLocaleString();
+                const el = document.createElement('div');
+                el.style.cssText = `
+                    border-left: 4px solid ${healthy ? '#16a34a' : isYield ? '#2563eb' : '#dc2626'};
+                    background: var(--bg);
+                    padding: 14px 16px;
+                    border-radius: 6px;
+                    margin-bottom: 4px;
+                `;
                 el.innerHTML = `
-                    <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:4px;">${date}</div>
-                    <strong>${a.crop_type.toUpperCase()}</strong> - ${a.disease_prediction}
-                    <div style="font-size:0.85rem; margin-top:4px;">
-                        Confidence: ${a.confidence.toFixed(1)}% | Status: ${a.is_healthy ? '✅ Healthy' : '⚠️ Diseased'}
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">#${idx + 1} &nbsp;•&nbsp; ${date}</div>
+                            <div style="font-weight:600;font-size:0.95rem;">
+                                ${isYield ? '📈' : '🔬'} ${a.crop_type?.toUpperCase() || 'UNKNOWN'} — ${a.disease_prediction}
+                            </div>
+                            <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;">
+                                <span>Confidence: <strong>${a.confidence ? a.confidence.toFixed(1) + '%' : 'N/A'}</strong></span>
+                                ${a.yield_per_ha ? `<span>Yield: <strong>${a.yield_per_ha} t/ha</strong></span>` : ''}
+                                ${a.total_yield ? `<span>Total: <strong>${a.total_yield} tonnes</strong></span>` : ''}
+                            </div>
+                        </div>
+                        <span style="
+                            padding:3px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+                            background:${healthy ? '#f0fdf4' : isYield ? '#eff6ff' : '#fef2f2'};
+                            color:${healthy ? '#16a34a' : isYield ? '#2563eb' : '#dc2626'};
+                            border:1px solid ${healthy ? '#bbf7d0' : isYield ? '#bfdbfe' : '#fecaca'};">
+                            ${isYield ? '📊 Yield' : healthy ? '✅ Healthy' : '⚠️ Diseased'}
+                        </span>
                     </div>
                 `;
                 content.appendChild(el);
@@ -723,7 +828,7 @@ async function viewFarmerAnalysis(farmerId) {
         modal.style.display = 'block';
     } catch (err) {
         console.error(err);
-        alert('Failed to fetch analysis.');
+        alert('Failed to fetch farmer activity.');
     }
     hideLoading();
 }
@@ -731,8 +836,8 @@ async function viewFarmerAnalysis(farmerId) {
 async function toggleFarmerAccess(farmerId) {
     showLoading('Updating access...');
     try {
-        await apiFetch(`https://crop-monitoring-system-3.onrender.com/api/admin/farmers/${farmerId}/revoke`, { method: 'POST' });
-        loadAdminData(); // refresh list
+        await apiFetch(`${API_BASE}/api/admin/farmers/${farmerId}/revoke`, { method: 'POST' });
+        loadAdminData();
     } catch (err) {
         console.error(err);
         alert('Failed to update access.');
