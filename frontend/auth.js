@@ -127,6 +127,51 @@ async function handleAdminLogin(event) {
     }
 }
 
+// ===== Admin Google Sign-In =====
+async function handleGoogleLogin() {
+    const msgEl = document.getElementById('admin-message');
+
+    if (typeof firebase === 'undefined') {
+        showMsg(msgEl, 'Firebase not loaded yet. Please wait or refresh.', 'error');
+        return;
+    }
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBWV3Da7U1wfBtnnGkIfCMo-aA1ej5seuw",
+        authDomain: "crop-monitor-684d8.firebaseapp.com",
+        projectId: "crop-monitor-684d8",
+        storageBucket: "crop-monitor-684d8.firebasestorage.app",
+        messagingSenderId: "1027449652032",
+        appId: "1:1027449652032:web:1c35cabe9e96b4ef96f0a5"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await firebase.auth().signInWithPopup(provider);
+        const fbUser = result.user;
+
+        const user = {
+            name: fbUser.displayName,
+            email_phone: fbUser.email,
+            photo: fbUser.photoURL,
+            initials: getInitials(fbUser.displayName),
+            role: 'admin',
+            loggedInAt: new Date().toISOString()
+        };
+
+        localStorage.setItem('cropdoctor_user', JSON.stringify(user));
+        localStorage.setItem('cropdoctor_token', fbUser.uid);
+
+        showMsg(msgEl, `✅ Welcome ${fbUser.displayName}! Redirecting...`, 'success');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+
+    } catch (error) {
+        showMsg(msgEl, 'Google Sign-In failed: ' + error.message, 'error');
+    }
+}
+
 // ===== Farmer Signup =====
 async function handleSignup(event) {
     event.preventDefault();
