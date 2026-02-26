@@ -226,7 +226,7 @@ async function analyzeDisease() {
         const formData = new FormData();
         formData.append('file', uploadedImageFile);
 
-        const data = await apiFetch('http://localhost:8000/api/disease/detect', {
+        const data = await apiFetch('https://crop-monitoring-system-3.onrender.com/api/disease/detect', {
             method: 'POST',
             body: formData
         });
@@ -349,7 +349,7 @@ async function predictYield(event) {
     }
 
     try {
-        const result = await apiFetch('http://localhost:8000/api/yield/predict', {
+        const result = await apiFetch('https://crop-monitoring-system-3.onrender.com/api/yield/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -434,7 +434,7 @@ async function getIrrigationAdvice(event) {
     }
 
     try {
-        const result = await apiFetch('http://localhost:8000/api/irrigation/recommend', {
+        const result = await apiFetch('https://crop-monitoring-system-3.onrender.com/api/irrigation/recommend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -507,7 +507,7 @@ async function getFertilizerAdvice(event) {
     }
 
     try {
-        const result = await apiFetch('http://localhost:8000/api/fertilizer/recommend', {
+        const result = await apiFetch('https://crop-monitoring-system-3.onrender.com/api/fertilizer/recommend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -584,7 +584,7 @@ async function getWeather() {
     }
 
     try {
-        const data = await apiFetch(`http://localhost:8000/api/weather?location=${encodeURIComponent(location)}`);
+        const data = await apiFetch(`https://crop-monitoring-system-3.onrender.com/api/weather?location=${encodeURIComponent(location)}`);
         setCache(cacheKey, data);
         displayWeather(data);
     } catch (error) {
@@ -654,7 +654,7 @@ async function loadAdminData() {
     if (window.currentUser?.role !== 'admin') return;
     showLoading('Loading farmers...');
     try {
-        const farmers = await apiFetch('http://localhost:8000/api/admin/farmers');
+        const farmers = await apiFetch('https://crop-monitoring-system-3.onrender.com/api/admin/farmers');
         const listEl = document.getElementById('admin-farmers-list');
         listEl.innerHTML = '';
         if (farmers.length === 0) {
@@ -695,7 +695,7 @@ async function loadAdminData() {
 async function viewFarmerAnalysis(farmerId) {
     showLoading('Loading analysis...');
     try {
-        const analyses = await apiFetch(`http://localhost:8000/api/admin/farmers/${farmerId}/analysis`);
+        const analyses = await apiFetch(`https://crop-monitoring-system-3.onrender.com/api/admin/farmers/${farmerId}/analysis`);
         const modal = document.getElementById('admin-analysis-modal');
         const content = document.getElementById('admin-analysis-content');
         content.innerHTML = '';
@@ -732,7 +732,7 @@ async function viewFarmerAnalysis(farmerId) {
 async function toggleFarmerAccess(farmerId) {
     showLoading('Updating access...');
     try {
-        await apiFetch(`http://localhost:8000/api/admin/farmers/${farmerId}/revoke`, { method: 'POST' });
+        await apiFetch(`https://crop-monitoring-system-3.onrender.com/api/admin/farmers/${farmerId}/revoke`, { method: 'POST' });
         loadAdminData(); // refresh list
     } catch (err) {
         console.error(err);

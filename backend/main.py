@@ -5,7 +5,6 @@ FastAPI Backend Main Application
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from auth import router as auth_router
 from crop import router as crop_router
 from weather import router as weather_router
@@ -37,8 +36,7 @@ app.include_router(crop_router, prefix="/api", tags=["Crop Analysis"])
 app.include_router(weather_router, prefix="/api", tags=["Weather"])
 app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
 
-# Serve frontend static files (must be LAST - catches all unmatched routes)
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+# NOTE: Frontend is served separately (open frontend HTML files directly or via a static host)
 
 if __name__ == "__main__":
     import uvicorn
